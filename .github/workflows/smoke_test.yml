@@ -5,13 +5,11 @@ on:
     branches:
   workflow_dispatch:
 
-env:
-  BUILD_DIR: zzz_build
-
 jobs:
   # Tests the google_test_installer
-  UnitTestInstaller:
+  UnitTest_Installer:
     strategy:
+      max-parallel: 2
       matrix:
 #        platform: ['ubuntu-latest', 'windows-latest', 'macos-latest']
         platform: ['ubuntu-latest']
@@ -19,21 +17,25 @@ jobs:
     steps:
       - name: Checkout VCS
         uses: actions/checkout@v6
+
       - name: Setup Python
         uses: actions/setup-python@v6
         with:
           python-version: 3.x
+
       - name: Setup MSVC
         if: runner.os == 'Windows'
         uses: ilammy/msvc-dev-cmd@v1
+
       - name: Unit Test
         run: python -B -m unittest --verbose
         working-directory: google_test_installer
 
   # Tests GoogleTest installation
-  UnitTestInstallation:
-    needs: UnitTestInstaller
+  UnitTest_Installation:
+    needs: UnitTest_Installer
     strategy:
+      max-parallel: 2
       matrix:
         platform: ['ubuntu-latest', 'windows-latest', 'macos-latest']
 #        platform: ['windows-latest', 'macos-latest']
@@ -45,19 +47,29 @@ jobs:
     steps:
       - name: Checkout VCS
         uses: actions/checkout@v6
+
+      ##################################################
+      # Setup Environment
+      ##################################################
       - name: Setup Python
         uses: actions/setup-python@v6
         with:
           python-version: 3.x
+
       - name: Setup MSVC
         if: runner.os == 'Windows'
         uses: ilammy/msvc-dev-cmd@v1
+
+      ##################################################
+      # Test
+      ##################################################
       - name: Setup GoogleTest
         uses: ./
         with:
           tag: ${{ matrix.googletest-version }}
           build-type: ${{ matrix.build-type }}
           loglevel: 'DEBUG'
+
       - name: Verify Installation
         if: (runner.os == 'Linux') || (runner.os == 'macOs')
         run:    |
@@ -67,6 +79,7 @@ jobs:
                     echo gtest/gtest.h is NOT found. Installation does not seem to work.
                     exit 1
                 fi
+
       - name: Verify Installation
         if: runner.os == 'Windows'
         run:    |
@@ -80,9 +93,10 @@ jobs:
                     exit 1
                 }
 
-  IntegrationTest:
-    needs: UnitTestInstallation
+  IntegrationTest_Typical:
+    needs: UnitTest_Installation
     strategy:
+      max-parallel: 2
       matrix:
         platform: ['ubuntu-latest', 'windows-latest', 'macos-latest']
 #        platform: ['windows-latest', 'macos-latest']
@@ -94,63 +108,87 @@ jobs:
     steps:
       - name: Checkout VCS
         uses: actions/checkout@v6
+
+      ##################################################
+      # Setup Environment
+      ##################################################
       - name: Setup MSVC
         if: runner.os == 'Windows'
         uses: ilammy/msvc-dev-cmd@v1
+
       - name: Setup GoogleTest
         uses: ./
         with:
           tag: ${{ matrix.googletest-version }}
           build-type: ${{ matrix.build-type }}
           loglevel: 'DEBUG'
-      - name: Test Example
+
+      ##################################################
+      # Build
+      ##################################################
+      - name: Build
         if: (runner.os == 'Linux') || (runner.os == 'macOs')
-        run:    |
-                mkdir ${{ env.BUILD_DIR }}
-                pushd ${{ env.BUILD_DIR }}
-                cmake -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} -G "Unix Makefiles" ..
-                make
-                make test
-                popd
-      - name: Test Example
+        run: ./do_build.sh
+
+      - name: Build
         if: runner.os == 'Windows'
-        run:    |
-                mkdir ${{ env.BUILD_DIR }}
-                pushd ${{ env.BUILD_DIR }}
-                cmake -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} -G "NMake Makefiles" ..
-                nmake
-                nmake test
-                popd
+        run: .\do_build.bat
+
+      ##################################################
+      # Lint
+      ##################################################
+      - name: Lint
+        if: (runner.os == 'Linux') || (runner.os == 'macOs')
+        run: ./do_lint.sh
+
+      - name: Lint
+        if: runner.os == 'Windows'
+        run: .\do_lint.bat
+
+      ##################################################
+      # Test
+      ##################################################
+      - name: Test
+        if: (runner.os == 'Linux') || (runner.os == 'macOs')
+        run: ./do_test.sh
+
+      - name: Test
+        if: runner.os == 'Windows'
+        run: .\do_test.bat
 
   # A test case that following directories are already exist.
   # - ${env:USERPROFILE}\bin
   # - ${env:USERPROFILE}\include
   # - ${env:USERPROFILE}\lib
-  IntegrationTestMisc:
-    needs: UnitTestInstallation
+  IntegrationTest_Misc:
+    needs: UnitTest_Installation
     runs-on: windows-latest
     steps:
       - name: Checkout VCS
         uses: actions/checkout@v6
+
+      ##################################################
+      # Setup Environment
+      ##################################################
       - name: Setup MSVC
         if: runner.os == 'Windows'
         uses: ilammy/msvc-dev-cmd@v1
+
       - name: Setup Test Case
         run:    |
                 mkdir "${env:USERPROFILE}\bin"
                 mkdir "${env:USERPROFILE}\include"
                 mkdir "${env:USERPROFILE}\lib"
+
       - name: Setup GoogleTest
         uses: ./
         with:
           tag: v1.14.0
           build-type: Release
           loglevel: DEBUG
-      - name: Test Example
-        run:    |
-                mkdir ${{ env.BUILD_DIR }}
-                pushd ${{ env.BUILD_DIR }}
-                cmake -DCMAKE_BUILD_TYPE=Release -G "NMake Makefiles" ..
-                nmake
-                nmake test
-                popd
+
+      ##################################################
+      # Build
+      ##################################################
+      - name: Build
+        run: .\do_build.bat

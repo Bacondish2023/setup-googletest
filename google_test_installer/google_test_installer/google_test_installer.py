@@ -200,18 +200,7 @@ class GoogleTestInstaller:
         '''
         @brief Returns generator name of cmake based on platform
         '''
-        generator_name = None
-
-        if platform.system() == 'Linux':
-            generator_name = 'Unix Makefiles'
-        elif platform.system() == 'Windows':
-            generator_name = 'NMake Makefiles'
-        elif platform.system() == 'Darwin':
-            generator_name = 'Unix Makefiles'
-        else:
-            raise RuntimeError('Platform "{0}" is not supported', platform.system())
-
-        return generator_name
+        return 'Ninja'
 
 
 if __name__ == '__main__':

@@ -2,6 +2,9 @@
 
 A GitHub Action which sets up your workflow with specified version of GoogleTest.
 
+Note:  
+This project is a third-party GitHub Action and is not affiliated with the GoogleTest project.
+
 Intended user
 * The person who wants to test C/C++ project with the GoogleTest on the GitHub Actions workflow.
   And uses CMake.
@@ -10,25 +13,29 @@ Intended user
 
 #### CMakeLists.txt
 
-This action supports the **FindGTest** which searches GoogleTest installation area.
-And the FindGTest provides variables which index to include directory, library files.
-So, you don't have to write path to installation area on CMakeLists.txt .
+This action supports `FindGTest`,
+which searches for an installed GoogleTest package and provides CMake targets.
 
-If you don't know FindGTest, see [CMake: FindGTest](https://cmake.org/cmake/help/latest/module/FindGTest.html) .
+If you are not familiar with `FindGTest`,
+see [CMake: FindGTest](https://cmake.org/cmake/help/latest/module/FindGTest.html) .
 
 ```cmake
 find_package(GTest REQUIRED)
 
-add_executable(test_foo foo.c)
-target_include_directories( test_foo PRIVATE ${GTEST_INCLUDE_DIRS} )
-target_link_libraries( test_foo tested_library ${GTEST_BOTH_LIBRARIES} )
+add_executable(test_foo test_foo.c)
+target_link_libraries(
+    test_foo
+    PRIVATE
+        tested_library
+        GTest::gtest
+        GTest::gtest_main
+)
 ```
 
-Let's write `find_package` with GTest argument before target definition such as
-`add_executable` and `add_library` .
-And specify include directory / library
-with variables `${GTEST_INCLUDE_DIRS}` and `${GTEST_BOTH_LIBRARIES}` .
-
+Call `find_package(GTest REQUIRED)` before defining targets
+such as `add_executable()` or `add_library()`.
+Then link the required GoogleTest targets,
+such as `GTest::gtest` and `GTest::gtest_main`, to your executable target.
 
 #### Workflow
 

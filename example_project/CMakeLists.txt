@@ -10,14 +10,12 @@ add_executable( test_libarithmetic
     test/test_arithmetic.cpp
 )
 
-target_include_directories( test_libarithmetic
-    PRIVATE
-        ${GTEST_INCLUDE_DIRS}
-)
-
 target_link_libraries( test_libarithmetic
     libarithmetic
-    ${GTEST_BOTH_LIBRARIES}
+    GTest::gtest        # This target requires CMake version 3.20
+    GTest::gtest_main   # This target requires CMake version 3.20
+    GTest::gmock        # This target requires CMake version 3.23
+    GTest::gmock_main   # This target requires CMake version 3.23
 )
 if (UNIX)
     target_link_libraries( test_libarithmetic pthread )
@@ -38,14 +36,12 @@ add_executable( test_libTime
     test/test_Time.cpp
 )
 
-target_include_directories( test_libTime
-    PRIVATE
-        ${GTEST_INCLUDE_DIRS}
-)
-
 target_link_libraries( test_libTime
     libTime
-    ${GTEST_BOTH_LIBRARIES}
+    GTest::gtest        # This target requires CMake version 3.20
+    GTest::gtest_main   # This target requires CMake version 3.20
+    GTest::gmock        # This target requires CMake version 3.23
+    GTest::gmock_main   # This target requires CMake version 3.23
 )
 if (UNIX)
     target_link_libraries( test_libTime pthread )
