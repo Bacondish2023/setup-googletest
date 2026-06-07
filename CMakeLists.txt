@@ -1,4 +1,6 @@
-cmake_minimum_required(VERSION 2.8)
+# To avoid error "Compatibility with CMake < 3.5 has been removed from CMake." on CMake v4.x
+cmake_minimum_required(VERSION 3.5)
+
 project(setup_googletest_exmaple_project)
 
 # CTest
