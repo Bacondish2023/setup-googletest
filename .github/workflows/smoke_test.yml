@@ -18,9 +18,9 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Checkout VCS
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: 3.x
       - name: Setup MSVC
@@ -44,9 +44,9 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Checkout VCS
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: 3.x
       - name: Setup MSVC
@@ -93,7 +93,7 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Checkout VCS
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Setup MSVC
         if: runner.os == 'Windows'
         uses: ilammy/msvc-dev-cmd@v1
@@ -131,7 +131,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Checkout VCS
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Setup MSVC
         if: runner.os == 'Windows'
         uses: ilammy/msvc-dev-cmd@v1
